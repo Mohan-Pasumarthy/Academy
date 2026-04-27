@@ -28,28 +28,26 @@ struct LoginView: View {
                     TextField("Enter username", text: $viewModel.userName)
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
-                        .focused($focusedField, equals: .password)
+                        .focused($focusedField, equals: .username)
                         .styledTextField()
 
                     Text("Password")
                         .secondaryHeadline()
 
                     SecureField("Enter password", text: $viewModel.password)
-                        .focused($focusedField, equals: .username)
+                        .focused($focusedField, equals: .password)
                         .styledTextField()
                 }
                 .padding(.horizontal)
 
                 VStack(spacing: 14) {
                     Button(action: {
-                        viewModel.signIn()
-                        withAnimation(.easeInOut) {
-                            showMainView = true
-                        }
+                        // TODO: handle sign in action
                     }) {
                         Text("Sign In")
-                            .primaryButton()
+                            .primaryButton(backgroundColor: viewModel.isValid ? Color.blue : Color.gray.opacity(0.5), foregroundColor: .white)
                     }
+                    .disabled(!viewModel.isValid)
 
                     Button(action: {
                         // TODO: handle sign up action
