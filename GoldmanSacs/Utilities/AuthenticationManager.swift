@@ -17,7 +17,7 @@ struct AuthDataResultModel {
         self.email = user.email
     }
 }
-class AuthencationManager {
+class AuthencationManager: AuthenticationProvider {
     static let shared = AuthencationManager()
     
     private init() { }

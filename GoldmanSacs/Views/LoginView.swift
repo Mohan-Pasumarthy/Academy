@@ -21,11 +21,11 @@ struct LoginView: View {
                     .fontWeight(.bold)
 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Username")
+                    Text("Email")
                         .secondaryHeadline()
                     
 
-                    TextField("Enter username", text: $viewModel.userName)
+                    TextField("Enter Email", text: $viewModel.email)
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
                         .focused($focusedField, equals: .username)
