@@ -34,7 +34,7 @@ class SignUpViewModel: ObservableObject {
 
     private var authProvider: AuthenticationProvider
 
-    init(authProvider: AuthenticationProvider = AuthencationManager.shared) {
+    init(authProvider: AuthenticationProvider = AuthencationManager()) {
         self.authProvider = authProvider
     }
 

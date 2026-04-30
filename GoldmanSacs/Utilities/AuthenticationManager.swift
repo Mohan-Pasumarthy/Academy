@@ -7,6 +7,7 @@
 
 import Foundation
 import FirebaseAuth
+import FirebaseFirestore
 
 struct AuthDataResultModel {
     let uid: String
@@ -17,11 +18,9 @@ struct AuthDataResultModel {
         self.email = user.email
     }
 }
+
 class AuthencationManager: AuthenticationProvider {
-    static let shared = AuthencationManager()
-    
-    private init() { }
-    
+
     func createUser(email: String, password: String) async throws -> AuthDataResultModel {
         let authDataResult = try await Auth.auth().createUser(withEmail: email, password: password)
         return AuthDataResultModel(user: authDataResult.user)
@@ -30,6 +29,25 @@ class AuthencationManager: AuthenticationProvider {
     func signIn(email: String, password: String) async throws -> AuthDataResultModel {
         let authDataResult = try await Auth.auth().signIn(withEmail: email, password: password)
         return AuthDataResultModel(user: authDataResult.user)
+    }
+
+    func isEmailRegistered(_ email: String) async throws -> Bool {
+        let normalizedEmail = email.lowercased()
+        let usersCollection = Firestore.firestore().collection("users")
+        let querySnapshot = try await usersCollection.whereField("email", isEqualTo: normalizedEmail).getDocuments()
+        return !querySnapshot.documents.isEmpty
+    }
+
+    func saveUserMetadata(_ metadata: UserMetadata) async throws {
+        let usersCollection = Firestore.firestore().collection("users")
+        let data: [String: Any] = [
+            "username": metadata.firstName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
+            "email": metadata.email.lowercased(),
+            "firstName": metadata.firstName,
+            "lastName": metadata.lastName ?? "",
+            "uid": metadata.uid
+        ]
+        try await usersCollection.document(metadata.uid).setData(data)
     }
 
     func signOut() throws {
