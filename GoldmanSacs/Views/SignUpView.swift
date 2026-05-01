@@ -108,9 +108,7 @@ struct SignUpView: View {
                     Button(action: {
                         Task {
                             viewModel.isLoading = true
-                            if await viewModel.handleSignUp() {
-                                LoginView()
-                            } else {
+                            if await !viewModel.handleSignUp() {
                                 viewModel.clearFailingFields()
                             }
                             viewModel.isLoading = false
@@ -136,9 +134,6 @@ struct SignUpView: View {
                 .padding(.top, 10)
             }
             .padding(15)
-            .alert(viewModel.userExistsAlertMessage, isPresented: $viewModel.showUserExistsAlert) {
-                Button("OK", role: .cancel) { viewModel.clearFields() }
-            }
             .alert(viewModel.successMessage, isPresented: $viewModel.showSuccessAlert) {
                 Button("OK") {
                     viewModel.clearFields()
@@ -146,9 +141,7 @@ struct SignUpView: View {
                 }
             }
             .alert(viewModel.errorMessage, isPresented: $viewModel.showErrorAlert) {
-                Button("OK") {
-                    viewModel.clearFields()
-                }
+               Button("OK", role: .cancel) { viewModel.clearFields() }
             }
             Spacer()
             

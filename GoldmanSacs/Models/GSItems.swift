@@ -18,3 +18,16 @@ struct GSItems: Codable, Identifiable {
         case title, url
     }
 }
+
+struct AuthDataResultModel {
+    let email: String
+    let firstName: String
+    let lastName: String?
+}
+
+struct UserData {
+    let firstName: String
+    let lastName: String?
+    let email: String
+    let password: String
+}

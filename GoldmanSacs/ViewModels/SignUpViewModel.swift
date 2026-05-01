@@ -20,49 +20,38 @@ class SignUpViewModel: ObservableObject {
     @Published var passwordError: String?
     @Published var confirmPasswordError: String?
     
-    @Published var showUserExistsAlert = false
-    @Published var userExistsAlertMessage = ""
+    @Published var showErrorAlert = false
+    @Published var errorMessage = ""
     
     @Published var showSuccessAlert = false
     @Published var successMessage = ""
-    
-    @Published var showErrorAlert = false
-    @Published var errorMessage = ""
     
     @Published var isLoading = false
 
     private var authProvider: AuthenticationProvider
 
-    init(authProvider: AuthenticationProvider = AuthencationManager.shared) {
+    init(authProvider: AuthenticationProvider = AuthencationManager()) {
         self.authProvider = authProvider
     }
 
     func handleSignUp() async -> Bool {
         if validateFields() {
             do {
-                // Check if email is already registered
-                if try await authProvider.isEmailRegistered(email) {
-                    userExistsAlertMessage = "User already exists with this email. Try a different email."
-                    showUserExistsAlert = true
-                    return false
-                }
-                
                 // Create user in Firebase Auth
                 let authResult = try await createUserInAuth()
-                
-                // Save user metadata to Firestore through the auth provider
-                let metadata = UserMetadata(
-                    uid: authResult.uid,
-                    email: email,
-                    firstName: firstName,
-                    lastName: lastName
-                )
-                try await authProvider.saveUserMetadata(metadata)
-                
+
                 // show success
                 successMessage = "User registered successfully"
                 showSuccessAlert = true
                 return true
+            } catch AuthenticationError.emailAlreadyRegistered {
+                errorMessage = "User already exists with this email. Try a different email."
+                showErrorAlert = true
+                return false
+            } catch AuthenticationError.metadataNotSaved {
+                errorMessage = "Failed to save user metadata. Please try again later."
+                showErrorAlert = true
+                return false
             } catch {
                 errorMessage = error.localizedDescription + " Please try again later."
                 showErrorAlert = true
@@ -73,7 +62,15 @@ class SignUpViewModel: ObservableObject {
     }
     
     private func createUserInAuth() async throws -> AuthDataResultModel {
-        return try await authProvider.createUser(email: email, password: password)
+        return try await authProvider
+            .createUser(
+            data: UserData(
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                password: password
+            )
+        )
     }
     
     func validateFields() -> Bool {

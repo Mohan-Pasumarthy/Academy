@@ -9,45 +9,47 @@ import Foundation
 import FirebaseAuth
 import FirebaseFirestore
 
-struct AuthDataResultModel {
-    let uid: String
-    let email: String?
-    
-    init(user: User) {
-        self.uid = user.uid
-        self.email = user.email
-    }
+enum AuthenticationError: Error {
+    case emailAlreadyRegistered
+    case metadataNotSaved
 }
 
 class AuthencationManager: AuthenticationProvider {
 
-    func createUser(email: String, password: String) async throws -> AuthDataResultModel {
-        let authDataResult = try await Auth.auth().createUser(withEmail: email, password: password)
-        return AuthDataResultModel(user: authDataResult.user)
+    func createUser(data: UserData) async throws -> AuthDataResultModel {
+        if try await isEmailRegistered(data.email) {
+            throw AuthenticationError.emailAlreadyRegistered
+        }
+        let authDataResult = try await Auth.auth().createUser(withEmail: data.email, password: data.password)
+        try await saveUserMetadata(data, id: authDataResult.user.uid)
+        return AuthDataResultModel(email: authDataResult.user.email ?? "", firstName: data.firstName, lastName: data.lastName ?? "")
     }
 
-    func signIn(email: String, password: String) async throws -> AuthDataResultModel {
-        let authDataResult = try await Auth.auth().signIn(withEmail: email, password: password)
-        return AuthDataResultModel(user: authDataResult.user)
+    func signIn(data: UserData) async throws -> AuthDataResultModel {
+        let authDataResult = try await Auth.auth().signIn(withEmail: data.email, password: data.password)
+        return AuthDataResultModel(email: authDataResult.user.email ?? "", firstName: data.firstName, lastName: data.lastName ?? "")
     }
 
-    func isEmailRegistered(_ email: String) async throws -> Bool {
+    private func isEmailRegistered(_ email: String) async throws -> Bool {
         let normalizedEmail = email.lowercased()
         let usersCollection = Firestore.firestore().collection("users")
         let querySnapshot = try await usersCollection.whereField("email", isEqualTo: normalizedEmail).getDocuments()
         return !querySnapshot.documents.isEmpty
     }
 
-    func saveUserMetadata(_ metadata: UserMetadata) async throws {
+    private func saveUserMetadata(_ data: UserData, id: String) async throws {
         let usersCollection = Firestore.firestore().collection("users")
-        let data: [String: Any] = [
-            "username": metadata.firstName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
-            "email": metadata.email.lowercased(),
-            "firstName": metadata.firstName,
-            "lastName": metadata.lastName ?? "",
-            "uid": metadata.uid
+        let metadata: [String: Any] = [
+            "firstName": data.firstName,
+            "lastName": data.lastName ?? "",
+            "email": data.email,
+            "password": data.password
         ]
-        try await usersCollection.document(metadata.uid).setData(data)
+        do {
+            try await usersCollection.document(id).setData(metadata)
+        } catch {
+            throw AuthenticationError.metadataNotSaved
+        }
     }
 
     func signOut() throws {
