@@ -41,19 +41,18 @@ class AuthenticationManager: AuthenticationProvider {
             let authDataResult = try await Auth.auth().signIn(withEmail: email, password: password)
             return authDataResult.user.uid
         } catch {
-            if let err = error as NSError? {
-                print("Error code:", err.code)
-                
-                switch AuthErrorCode(rawValue: err.code) {
-                case .invalidCredential:
-                    throw AuthenticationError.invalidCredential
-                case .networkError:
-                    print("Network error")
-                    throw AuthenticationError.networkError
-                default:
-                    print("Unhandled error:", err.localizedDescription)
-                    throw AuthenticationError.unknown
-                }
+            guard let err = error as NSError? else {
+                throw AuthenticationError.unknown
+            }
+            switch AuthErrorCode(rawValue: err.code) {
+            case .invalidCredential:
+                throw AuthenticationError.invalidCredential
+            case .networkError:
+                print("Network error")
+                throw AuthenticationError.networkError
+            default:
+                print("Unhandled error:", err.localizedDescription)
+                throw AuthenticationError.unknown
             }
         }
     }
@@ -69,7 +68,6 @@ class AuthenticationManager: AuthenticationProvider {
             } else {
                 throw AuthenticationError.unknown
             }
-            
         }
     }
     
@@ -95,10 +93,16 @@ class AuthenticationManager: AuthenticationProvider {
         guard document.exists else {
             throw AuthenticationError.userNotFound
         }
+        guard
+            let firstName = document.get("firstName") as? String,
+            let lastName = document.get("lastName") as? String
+        else {
+            throw AuthenticationError.metadataNotSaved
+        }
         return AuthDataResultModel(
             id: id,
-            firstName: document.get("firstName") as? String ?? "",
-            lastName: document.get("lastName") as? String ?? "",
+            firstName: firstName,
+            lastName: lastName
         )
     }
 
