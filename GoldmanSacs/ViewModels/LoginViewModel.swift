@@ -17,7 +17,7 @@ class LoginViewModel: ObservableObject {
     @Published var isDisabled: Bool = true
     @Published var showErrorAlert = false
     
-    var cancellables = Set<AnyCancellable>()
+    private var cancellables = Set<AnyCancellable>()
     
     private var authProvider: AuthenticationProvider
     
@@ -51,7 +51,7 @@ class LoginViewModel: ObservableObject {
             showErrorAlert = true
             return false
         } catch {
-            errorMessage = "unknown Error. Please try again"
+            errorMessage = "Unknown Error. Please try again."
             showErrorAlert = true
             return false
         }
