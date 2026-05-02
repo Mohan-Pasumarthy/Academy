@@ -18,7 +18,7 @@ enum AuthenticationError: Error {
     case unknown
 }
 
-class AuthencationManager: AuthenticationProvider {
+class AuthenticationManager: AuthenticationProvider {
 
     func signUp(data: UserData) async throws -> AuthDataResultModel {
         //create user
@@ -33,7 +33,7 @@ class AuthencationManager: AuthenticationProvider {
         let id = try await signingIn(email, password)
         //fetch user data from data base
         let userData = try await getUserMetadata(id: id)
-        return AuthDataResultModel(id: id, email: userData.email, firstName: userData.firstName, lastName: userData.lastName ?? "")
+        return AuthDataResultModel(id: userData.id, firstName: userData.firstName, lastName: userData.lastName ?? "")
     }
     
     private func signingIn(_ email: String, _ password: String) async throws -> String {
@@ -61,7 +61,7 @@ class AuthencationManager: AuthenticationProvider {
     private func createUser(data: UserData) async throws -> AuthDataResultModel {
         do {
             let authDataResult = try await Auth.auth().createUser(withEmail: data.email, password: data.password)
-            return AuthDataResultModel(id: authDataResult.user.uid,email: authDataResult.user.email ?? "", firstName: data.firstName, lastName: data.lastName ?? "")
+            return AuthDataResultModel(id: authDataResult.user.uid, firstName: data.firstName, lastName: data.lastName ?? "")
         } catch {
             if let err = error as NSError?,
                AuthErrorCode(rawValue: err.code) == .emailAlreadyInUse {
@@ -88,18 +88,17 @@ class AuthencationManager: AuthenticationProvider {
         }
     }
     
-    private func getUserMetadata(id: String) async throws -> UserData {
+    private func getUserMetadata(id: String) async throws -> AuthDataResultModel {
         let usersCollection = Firestore.firestore().collection("users")
         
         let document = try await usersCollection.document(id).getDocument()
         guard document.exists else {
             throw AuthenticationError.userNotFound
         }
-        return UserData(
+        return AuthDataResultModel(
+            id: id,
             firstName: document.get("firstName") as? String ?? "",
             lastName: document.get("lastName") as? String ?? "",
-            email: document.get("email") as? String ?? "",
-            password: document.get("password") as? String ?? ""
         )
     }
 

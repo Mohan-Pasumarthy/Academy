@@ -32,7 +32,7 @@ struct LoginView: View {
                         .disableAutocorrection(true)
                         .focused($focusedField, equals: .email)
                         .styledTextField()
-                    if !viewModel.isValidEmail(viewModel.email) {
+                    if !CredentialValidator.isValidEmail(viewModel.email) {
                         Text(verbatim: "e.g. john@example.com")
                             .font(.caption)
                             .italic()
@@ -55,13 +55,6 @@ struct LoginView: View {
                         }
                     }
                     .styledTextField()
-                    
-                    if !viewModel.isValidPassword(viewModel.password) {
-                        Text("6+ chars, upper, lower, number & special (e.g. Abc@123)")
-                            .font(.caption)
-                            .italic()
-                            .foregroundColor(.gray)
-                    }
                 }
                 .padding(.horizontal)
 
