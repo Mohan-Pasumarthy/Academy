@@ -22,8 +22,13 @@ class LoginViewModel: ObservableObject {
     private var authProvider: AuthenticationProvider
     private var sessionStore: UserSessionStore
     
+    var welcomeMessage: String {
+        let name = sessionStore.getUser().map { $0.firstName } ?? ""
+        return name.isEmpty ? "Welcome Back" : "Welcome \(name.capitalized)"
+    }
+    
     init(authProvider: AuthenticationProvider = AuthenticationManager(),
-         sessionStore: UserSessionStore = UserDefaultsSessionStore()) {
+         sessionStore: UserSessionStore = UserDefaultsSessionStorageManager()) {
         self.authProvider = authProvider
         self.sessionStore = sessionStore
         
@@ -39,12 +44,7 @@ class LoginViewModel: ObservableObject {
     func handleSignIn() async -> Bool {
         do {
             let authData = try await authProvider.signIn(email: email, password: password)
-            
-            let user = UserSession(
-                firstName: authData.user.firstName,
-                lastName: authData.user.lastName
-            )
-            sessionStore.saveUser(user)
+            sessionStore.saveUser(authData.user)
             return true
         } catch AuthenticationError.invalidCredential {
             errorMessage = "Incorrect Email or Password. if you are a new user click 'OK' to sign up"

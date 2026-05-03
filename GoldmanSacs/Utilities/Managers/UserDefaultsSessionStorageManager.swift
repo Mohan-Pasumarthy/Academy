@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class UserDefaultsSessionStore: UserSessionStore {
+final class UserDefaultsSessionStorageManager: UserSessionStore {
     
     private let defaults: UserDefaults
     private let userKey = "logged_in_user"

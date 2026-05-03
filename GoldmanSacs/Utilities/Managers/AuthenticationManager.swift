@@ -75,9 +75,7 @@ class AuthenticationManager: AuthenticationProvider {
         let usersCollection = Firestore.firestore().collection("users")
         let metadata: [String: Any] = [
             "firstName": data.user.firstName,
-            "lastName": data.user.lastName ?? "",
-            "email": data.email,
-            "password": data.password
+            "lastName": data.user.lastName ?? ""
         ]
         do {
             try await usersCollection.document(id).setData(metadata)
@@ -93,12 +91,10 @@ class AuthenticationManager: AuthenticationProvider {
         guard document.exists else {
             throw AuthenticationError.userNotFound
         }
-        guard
-            let firstName = document.get("firstName") as? String,
-            let lastName = document.get("lastName") as? String
-        else {
+        guard let firstName = document.get("firstName") as? String else {
             throw AuthenticationError.metadataNotSaved
         }
+        let lastName = document.get("lastName") as? String
         return AuthDataResultModel(
             id: id,
             user: UserSession(firstName: firstName, lastName: lastName)
