@@ -16,7 +16,7 @@ class LoginViewModel: ObservableObject {
     @Published var invalidCred: Bool = false
     @Published var isDisabled: Bool = true
     @Published var showErrorAlert = false
-    @Published var CurrentUser: String = ""
+    @Published var currentUser: String = ""
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -29,7 +29,7 @@ class LoginViewModel: ObservableObject {
         self.sessionStore = sessionStore
         
         if let user = sessionStore.getUser() {
-            self.CurrentUser = "\(user.firstName) \(user.lastName ?? "")"
+            self.currentUser = "\(user.firstName) \(user.lastName ?? "")"
         }
         
         // Button state
