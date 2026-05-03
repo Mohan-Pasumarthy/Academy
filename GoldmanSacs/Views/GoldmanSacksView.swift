@@ -14,10 +14,8 @@ struct GoldmanSacksView: View {
     var body: some View {
         NavigationView {
             Group {
-                if viewModel.isLoading {
-                    ProgressView("Loading...")
-                } else if viewModel.items.isEmpty {
-                    Text("No Items ....")
+                if viewModel.items.isEmpty {
+                    Text("Items Loading ....")
                 } else {
                     List {
                         ForEach(viewModel.items) { item in
@@ -47,6 +45,7 @@ struct GoldmanSacksView: View {
                     .foregroundColor(.primary)
             })
         }
+        .loadingOverlay(viewModel.isLoading)
     }
 }
 
