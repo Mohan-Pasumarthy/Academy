@@ -19,15 +19,22 @@ struct GoldmanSacksView: View {
                 } else {
                     List {
                         ForEach(viewModel.items) { item in
-                            RowView(
-                                image: viewModel.getImage(for: item),
-                                title: item.title ?? "Untitled",
-                                explanation: item.explanation ?? "",
-                                date: viewModel.getParsedDate(for: item),
-                                onAppear: {
-                                    viewModel.loadImageIfNeeded(for: item)
-                                }
-                            )
+                            NavigationLink {
+                                ItemDetailView(
+                                    item: item,
+                                    image: viewModel.getImage(for: item)
+                                )
+                            } label: {
+                                RowView(
+                                    image: viewModel.getImage(for: item),
+                                    title: item.title ?? "Untitled",
+                                    explanation: item.explanation ?? "",
+                                    date: viewModel.getParsedDate(for: item),
+                                    onAppear: {
+                                        viewModel.loadImageIfNeeded(for: item)
+                                    }
+                                )
+                            }
                             .listRowSeparator(.hidden)
                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                         }
